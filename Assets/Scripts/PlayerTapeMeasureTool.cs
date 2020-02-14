@@ -36,9 +36,33 @@ public class PlayerTapeMeasureTool : MonoBehaviour
         {
             //Tapemeasure object should be generated.
             Debug.Log("Creating Tapemeasure!");
-
-
+            //Should I use a coroutine that is started here? That way the if condition above activates it? Then the coroutine can have its own if to ensure that one hand always has the tape measure.
         }
+    }
+
+    //Create a 3d object? Or just draw a line?
+    //Either way, I need to calculate the distance between the hands/tapemeasure points, and display it.
+    IEnumerator ActivateTapeMeasure()
+    {
+        bool alreadyActive = false;
+        while((OVRInput.Get(OVRInput.RawButton.LIndexTrigger)
+            && OVRInput.Get(OVRInput.RawButton.Y))
+            || (OVRInput.Get(OVRInput.RawButton.RIndexTrigger)
+            && OVRInput.Get(OVRInput.RawButton.B))) //While either hand has "pinching" buttons held, keep this coroutine active.
+        {
+            if (alreadyActive == true) //If the tapemeasure is already active,
+            {
+                //No need to recreate tape measure objects.
+                //Calculate distance between the two objects.
+            }
+            else //Tape measure objects need to be generated.
+            {
+                //Generate tape measure objects at hands.
+                alreadyActive = true;
+            }
+        }
+        alreadyActive = false;
+        StopCoroutine(ActivateTapeMeasure()); //Tape measure should disappear.
     }
 
     private void FixedUpdate()
