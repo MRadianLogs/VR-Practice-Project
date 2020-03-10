@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /* Key Differences from V1:
  *  1. Have the user place down 2(4?) points using a pointer.
@@ -8,13 +9,13 @@ using UnityEngine;
  *  2. Will only require 1 button to activate
  *      - Eventually activated using wrist button
  *  3. Performance/Bugs: No coroutine will be used. This should allow the use of other project functions without stealing controls.
- */ 
+ */
 
 
 /* IDEAS:
  *  1. Have ammo count displayed for number of points placed out of total.
  * 
- */ 
+ */
 public class PlayerTapeMeasureToolV2 : MonoBehaviour
 {
     [SerializeField]
@@ -40,8 +41,12 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
 
     [SerializeField]
     private GameObject laserPointer;
+    [SerializeField]
+    private GameObject laserPointerPoint;
 
     private float measuredDistance = 0f; //The cumulative measured distance between all placed points.
+    [SerializeField]
+    private GameObject tapeMeasureUICanvas;
 
     private void Start()
     {
@@ -52,9 +57,6 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        OVRInput.Update(); //Required for OVRInput buttons.
-        //Debug.Log("Current state: " + OVRInput.GetDown(OVRInput.Button.One)); Why doesnt this work?? Bug??
-
         //If activation button is pressed.
         if (OVRInput.GetDown(activationButton))
         {
@@ -82,17 +84,18 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
             {
                 //Place tapemeasure point at straight line from hand. (Use pointer line.)
                 //TODO Instantiate prefab at laser pointer end and add to list at [currentNumTapeMeasurePoints].
-                        //  tapeMeasurePoints[currentNumTapeMeasurePoints] = Instantiate(tapeMeasurePointPrefab, laserPointer.transform.position, laserPointer.transform.rotation);
+                tapeMeasurePoints[currentNumTapeMeasurePoints] = Instantiate(tapeMeasurePointPrefab, laserPointer.GetComponent<LineRenderer>().GetPosition(1), laserPointer.transform.rotation);
                 currentNumTapeMeasurePoints++;
                 if (currentNumTapeMeasurePoints >= 2) //If there is at least 2 points to measure the distance between and draws lines.
                 {
-                    //TODO, Instantiate line between the points.
+                    //Instantiate line between the points.
                     tapeMeasureTapes[currentNumTapeMeasureTapes] = Instantiate(tapeMeasureTapePrefab, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.rotation);
                     tapeMeasureTapes[currentNumTapeMeasureTapes].GetComponent<LineRenderer>().SetPosition(0, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position);
                     tapeMeasureTapes[currentNumTapeMeasureTapes].GetComponent<LineRenderer>().SetPosition(1, tapeMeasurePoints[currentNumTapeMeasurePoints - 2].transform.position);
                     currentNumTapeMeasureTapes++;
                     //Calculate the new cumulative measured distance between new point and last point.
                     measuredDistance += Vector2.Distance(tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position, tapeMeasurePoints[currentNumTapeMeasurePoints - 2].transform.position);
+                    tapeMeasureUICanvas.GetComponent<TapeMeasureUIBehavior>().SetMeasuredDistanceText(measuredDistance);
                 }
             }
             else //Max points placed. Remove all points and lines.
@@ -103,27 +106,24 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
 
         }
     }
-    private void FixedUpdate()
-    {
-        OVRInput.FixedUpdate(); //Required for OVRInput buttons.
-    }
 
-    //TODO
     private void ActivateTapeMeasure()
     {
         //Enable pointer.
-        
+        laserPointer.SetActive(true);
         //Enable UI for displaying measurements.
+        tapeMeasureUICanvas.SetActive(true);
     }
 
-    //TODO
     private void DeactivateTapeMeasure()
     {
         //Disable pointer.
-
+        laserPointer.SetActive(false);
         //Disable UI for displaying measurements.
-
+        tapeMeasureUICanvas.SetActive(false);
         //Remove any tapemeasure points, and lines between them.
+        RemoveAllTapeMeasurePoints();
+        RemoveAllTapeMeasureLines();
     }
 
     private void RemoveAllTapeMeasurePoints()
@@ -138,6 +138,7 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
         currentNumTapeMeasurePoints = 0;
         //Resets measured distance.
         measuredDistance = 0f;
+        tapeMeasureUICanvas.GetComponent<TapeMeasureUIBehavior>().SetMeasuredDistanceText(measuredDistance); //TODO Might break.
     }
     private void RemoveAllTapeMeasureLines() //TODO Make sure this doesnt error.
     {
