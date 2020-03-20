@@ -24,8 +24,8 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
     private OVRInput.RawButton placeTapeMeasurePointButton = OVRInput.RawButton.RIndexTrigger; //Change this to whatever button we want to use to place tapemeasuring points. Distance will be measured between these.
 
     private bool isActive = false;
-    [SerializeField]
-    private GameObject testActiveObject;
+    //[SerializeField]
+    //private GameObject testActiveObject;
 
     [SerializeField]
     private int maxNumTapeMeasurePoints = 2;
@@ -41,8 +41,8 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
 
     [SerializeField]
     private GameObject laserPointer;
-    [SerializeField]
-    private GameObject laserPointerPoint;
+    //[SerializeField]
+    //private GameObject laserPointerPoint;
 
     private float measuredDistance = 0f; //The cumulative measured distance between all placed points.
     [SerializeField]
@@ -64,7 +64,7 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
             {
                 //Tapemeasure object should be disabled.
                 Debug.Log("Turning off tapemeasure...");
-                testActiveObject.SetActive(false);
+                //testActiveObject.SetActive(false);
                 DeactivateTapeMeasure();
                 isActive = false;
             }
@@ -72,36 +72,43 @@ public class PlayerTapeMeasureToolV2 : MonoBehaviour
             {
                 //Tapemeasure object should be generated.
                 Debug.Log("Creating tapemeasure!");
-                testActiveObject.SetActive(true);
+                //testActiveObject.SetActive(true);
                 ActivateTapeMeasure();
                 isActive = true;
             }
         }
         //If the tapemeasure is active, enable placing tapemeasure points.
-        if(isActive && OVRInput.GetDown(placeTapeMeasurePointButton)) //If placing button pressed,
+        if(isActive) 
         {
-            if (currentNumTapeMeasurePoints < maxNumTapeMeasurePoints) //If not max number of points placed,
+            //Move laser pointer? //Depending on what laser pointer we use, such as if we make our own, ill need to do this and make the laser pointer stop once it raycasts an object.
+            //laserPointer.transform.position = rightHand.transform.position;
+            //laserPointer.transform.rotation = rightHand.transform.rotation;
+
+            if (OVRInput.GetDown(placeTapeMeasurePointButton)) //If placing button pressed,
             {
-                //Place tapemeasure point at straight line from hand. (Use pointer line.)
-                //TODO Instantiate prefab at laser pointer end and add to list at [currentNumTapeMeasurePoints].
-                tapeMeasurePoints[currentNumTapeMeasurePoints] = Instantiate(tapeMeasurePointPrefab, laserPointer.GetComponent<LineRenderer>().GetPosition(1), laserPointer.transform.rotation);
-                currentNumTapeMeasurePoints++;
-                if (currentNumTapeMeasurePoints >= 2) //If there is at least 2 points to measure the distance between and draws lines.
+                if (currentNumTapeMeasurePoints < maxNumTapeMeasurePoints) //If not max number of points placed,
                 {
-                    //Instantiate line between the points.
-                    tapeMeasureTapes[currentNumTapeMeasureTapes] = Instantiate(tapeMeasureTapePrefab, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.rotation);
-                    tapeMeasureTapes[currentNumTapeMeasureTapes].GetComponent<LineRenderer>().SetPosition(0, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position);
-                    tapeMeasureTapes[currentNumTapeMeasureTapes].GetComponent<LineRenderer>().SetPosition(1, tapeMeasurePoints[currentNumTapeMeasurePoints - 2].transform.position);
-                    currentNumTapeMeasureTapes++;
-                    //Calculate the new cumulative measured distance between new point and last point.
-                    measuredDistance += Vector2.Distance(tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position, tapeMeasurePoints[currentNumTapeMeasurePoints - 2].transform.position);
-                    tapeMeasureUICanvas.GetComponent<TapeMeasureUIBehavior>().SetMeasuredDistanceText(measuredDistance);
+                    //Place tapemeasure point at straight line from hand. (Use pointer line.)
+                    //TODO Instantiate prefab at laser pointer end and add to list at [currentNumTapeMeasurePoints].
+                    tapeMeasurePoints[currentNumTapeMeasurePoints] = Instantiate(tapeMeasurePointPrefab, laserPointer.GetComponent<LineRenderer>().GetPosition(1), laserPointer.transform.rotation);
+                    currentNumTapeMeasurePoints++;
+                    if (currentNumTapeMeasurePoints >= 2) //If there is at least 2 points to measure the distance between and draws lines.
+                    {
+                        //Instantiate line between the points.
+                        tapeMeasureTapes[currentNumTapeMeasureTapes] = Instantiate(tapeMeasureTapePrefab, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.rotation);
+                        tapeMeasureTapes[currentNumTapeMeasureTapes].GetComponent<LineRenderer>().SetPosition(0, tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position);
+                        tapeMeasureTapes[currentNumTapeMeasureTapes].GetComponent<LineRenderer>().SetPosition(1, tapeMeasurePoints[currentNumTapeMeasurePoints - 2].transform.position);
+                        currentNumTapeMeasureTapes++;
+                        //Calculate the new cumulative measured distance between new point and last point.
+                        measuredDistance += Vector2.Distance(tapeMeasurePoints[currentNumTapeMeasurePoints - 1].transform.position, tapeMeasurePoints[currentNumTapeMeasurePoints - 2].transform.position);
+                        tapeMeasureUICanvas.GetComponent<TapeMeasureUIBehavior>().SetMeasuredDistanceText(measuredDistance);
+                    }
                 }
-            }
-            else //Max points placed. Remove all points and lines.
-            {
-                RemoveAllTapeMeasurePoints();
-                RemoveAllTapeMeasureLines();
+                else //Max points placed. Remove all points and lines.
+                {
+                    RemoveAllTapeMeasurePoints();
+                    RemoveAllTapeMeasureLines();
+                }
             }
 
         }
